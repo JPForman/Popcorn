@@ -1,0 +1,24 @@
+@use "../../styles/variables" as *;
+
+.header {
+  border-bottom: 1px solid $color-border;
+  padding: $space-sm $space-md;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  flex-wrap: wrap;
+
+  a,
+  button {
+    color: inherit;
+  }
+}
+
+.brand {
+  font-weight: 700;
+  margin-right: auto;
+  text-decoration: none;
+}

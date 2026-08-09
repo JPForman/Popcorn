@@ -1,0 +1,36 @@
+@use "variables" as *;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  color: $color-text;
+  background: $color-bg;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: $space-md;
+}
+
+a {
+  color: $color-primary;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+}

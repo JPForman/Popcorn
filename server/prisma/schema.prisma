@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TitleType {
+  MOVIE
+  TV
+}
+
+model User {
+  id          String   @id @default(cuid())
+  firebaseUid String   @unique
+  email       String   @unique
+  displayName String
+  avatarUrl   String?
+  bio         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ratings   Rating[]
+  comments  Comment[]
+  following Follow[]  @relation("Follower")
+  followers Follow[]  @relation("Following")
+
+  @@index([displayName])
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+}
+
+model Title {
+  id           String    @id @default(cuid())
+  tmdbId       Int
+  type         TitleType
+  name         String
+  posterUrl    String?
+  releaseYear  Int?
+  synopsis     String?
+  lastSyncedAt DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+
+  ratings Rating[]
+
+  @@unique([tmdbId, type])
+  @@index([name])
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  userId    String
+  titleId   String
+  score     Decimal  @db.Decimal(2, 1)
+  review    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title    Title     @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  comments Comment[]
+
+  @@unique([userId, titleId])
+  @@index([titleId])
+  @@index([userId, createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  ratingId  String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+
+  rating Rating @relation(fields: [ratingId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ratingId, createdAt])
+}
