@@ -1,0 +1,35 @@
+@use "../styles/variables" as *;
+@use "../styles/mixins" as *;
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+
+  @include respond-up(md) {
+    flex-direction: row;
+  }
+}
+
+.poster {
+  width: 200px;
+  border-radius: 8px;
+  align-self: center;
+
+  @include respond-up(md) {
+    align-self: flex-start;
+  }
+}
+
+.year {
+  color: $color-muted;
+  font-weight: 400;
+}
+
+.cast {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: $space-xs;
+}

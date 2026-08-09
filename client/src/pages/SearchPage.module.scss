@@ -1,0 +1,8 @@
+@use "../styles/variables" as *;
+
+.results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-md;
+  margin-top: $space-md;
+}

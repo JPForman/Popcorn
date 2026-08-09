@@ -1,0 +1,29 @@
+@use "../../styles/variables" as *;
+
+.card {
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+  width: 120px;
+}
+
+.poster,
+.posterPlaceholder {
+  width: 120px;
+  height: 180px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: $color-border;
+}
+
+.name {
+  margin-top: $space-xs;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.year {
+  color: $color-muted;
+  font-size: 0.8rem;
+}

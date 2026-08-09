@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Use clean non-verbose code and reusable components when possible.
+Use clean non-verbose code and reusable components when possible. Use global variables for colors and other styling choices when appropriate.
 
 ## Project
 
@@ -34,7 +34,7 @@ A single test file: `npx vitest run path/to/file.test.ts` (from within the relev
 
 ### Environment setup
 
-Real secrets live in `server/.env` and `client/.env` (both gitignored, never commit them). `.env.example` at the root documents every variable and where to obtain it; `server/.env.example` just points back to the root file. Required for the server to boot: `DATABASE_URL`/`DIRECT_URL` (Neon), `FIREBASE_PROJECT_ID`/`FIREBASE_CLIENT_EMAIL`/`FIREBASE_PRIVATE_KEY` (Firebase Admin service account). `TMDB_API_KEY` is currently optional (defaults to `""` in `server/src/config/env.ts`) since TMDB integration hasn't been built yet — tighten that back to required once Phase 2 lands. The client needs the matching `VITE_FIREBASE_*` values from the same Firebase project's Web App config, plus `VITE_API_BASE_URL`.
+Real secrets live in `server/.env` and `client/.env` (both gitignored, never commit them). `.env.example` at the root documents every variable and where to obtain it; `server/.env.example` just points back to the root file. Required for the server to boot: `DATABASE_URL`/`DIRECT_URL` (Neon), `FIREBASE_PROJECT_ID`/`FIREBASE_CLIENT_EMAIL`/`FIREBASE_PRIVATE_KEY` (Firebase Admin service account), `TMDB_API_KEY` (themoviedb.org). The client needs the matching `VITE_FIREBASE_*` values from the same Firebase project's Web App config, plus `VITE_API_BASE_URL`.
 
 `shared` must be built (`npm run build -w shared`) before `server` or `client` typecheck/build will resolve `@popcorn/shared` — it's consumed via its compiled `dist/` output, not source, since both workspaces import it as a package (`import { ... } from "@popcorn/shared"`), not a relative path.
 
@@ -60,7 +60,11 @@ Layering is strict: `routes/` → `controllers/` (thin — parse request, call a
 
 ### Data model (`server/prisma/schema.prisma`)
 
-`User` (keyed by internal `id`, `firebaseUid` unique) → `Rating` (unique per `[userId, titleId]`, `score` is `Decimal(2,1)` to avoid float rounding on half-bag values) → `Title` (unique per `[tmdbId, type]`, cached from TMDB on read — not yet implemented) → `Comment` (on a `Rating`) and `Follow` (composite PK `[followerId, followingId]`). All child relations cascade-delete from `User`. Average ratings are meant to be computed on read via `prisma.rating.aggregate`, not denormalized onto `Title`.
+`User` (keyed by internal `id`, `firebaseUid` unique) → `Rating` (unique per `[userId, titleId]`, `score` is `Decimal(2,1)` to avoid float rounding on half-bag values) → `Title` (unique per `[tmdbId, type]`, cached from TMDB on read) → `Comment` (on a `Rating`) and `Follow` (composite PK `[followerId, followingId]`). All child relations cascade-delete from `User`. Average ratings are computed on read via `prisma.rating.aggregate`, not denormalized onto `Title`.
+
+### TMDB integration (`src/services/tmdb.service.ts`, `title.service.ts`)
+
+`tmdb.service.ts` is the only module that talks to the TMDB HTTP API directly (search + `/movie|tv/{id}?append_to_response=credits`) and maps TMDB's response shape into this app's DTOs. `title.service.ts` owns the cache-on-read policy: `getOrFetchTitle(tmdbId, type, viewerId?)` upserts the `Title` row (keyed by `[tmdbId, type]`) only when missing or older than `TITLE_STALE_MS` (7 days) — but cast is fetched live from TMDB on *every* call regardless of staleness and is never persisted (deliberately no `Cast`/`Person` table for MVP). The same function also computes `averageScore`/`ratingCount` via `prisma.rating.aggregate` and, when a `viewerId` is passed (from `optionalAuth`), the viewer's own rating — so the title-detail response is a single merged DTO, not something callers assemble themselves. `searchTitles` is a thin passthrough to TMDB search with no DB write — search results are transient/preview, not cached until a title's detail page is actually opened.
 
 ### Client structure
 
@@ -77,4 +81,4 @@ Layering is strict: `routes/` → `controllers/` (thin — parse request, call a
 
 ## Planning context
 
-This repo is being built in phases (Foundation → TMDB integration → Rating core → Social layer → Polish/deploy); only Foundation is done. Deploy target is Firebase Hosting (client) + Cloud Run (server), migrations run via `prisma migrate deploy` in CI, GitHub Actions for CI/CD — none of that pipeline exists yet (no `.github/workflows/`, `Dockerfile`, or `firebase.json` in the repo currently).
+This repo is being built in phases (Foundation → TMDB integration → Rating core → Social layer → Polish/deploy); Foundation and TMDB integration are done. Ratings are still read-only aggregates with no create/edit/delete UI or endpoints yet. Deploy target is Firebase Hosting (client) + Cloud Run (server), migrations run via `prisma migrate deploy` in CI, GitHub Actions for CI/CD — none of that pipeline exists yet (no `.github/workflows/`, `Dockerfile`, or `firebase.json` in the repo currently).
