@@ -14,6 +14,7 @@ export function SearchPage() {
       <h1>Search</h1>
       <input
         type="search"
+        className={styles.searchInput}
         placeholder="Search movies and TV shows…"
         aria-label="Search movies and TV shows"
         value={query}

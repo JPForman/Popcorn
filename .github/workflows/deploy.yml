@@ -1,0 +1,133 @@
+# Deploys the server to Cloud Run and the client to Firebase Hosting on every push to main.
+#
+# Required GitHub repo secrets (Settings -> Secrets and variables -> Actions):
+#   GCP_PROJECT_ID          - GCP project id backing the Firebase project (Firebase projects ARE GCP projects)
+#   GCP_SA_KEY               - JSON key for a GCP service account with Artifact Registry Writer + Cloud Run Admin
+#                               + Service Account User roles
+#   DATABASE_URL              - production Neon pooled connection string (used by `prisma migrate deploy`
+#                               and injected into the running Cloud Run service)
+#   DIRECT_URL                - production Neon direct/unpooled connection string (migrations only)
+#   CLIENT_ORIGIN             - deployed Firebase Hosting origin, e.g. https://popcorn-70873.web.app
+#                               (used for the server's CORS allow-list)
+#   FIREBASE_PROJECT_ID       - Firebase Admin service account project_id
+#   FIREBASE_CLIENT_EMAIL     - Firebase Admin service account client_email
+#   FIREBASE_PRIVATE_KEY      - Firebase Admin service account private_key (with \n escapes, same format as .env)
+#   FIREBASE_SERVICE_ACCOUNT  - a *separate* Firebase service account JSON (Firebase Hosting Admin role) used
+#                               only to authenticate `firebase deploy`, not the running server
+#   TMDB_API_KEY               - TMDB API key
+#   VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID
+#                               - same values as client/.env's Firebase Web App config
+#
+# Until these secrets are added, this workflow will fail early (at the migrate or auth step) --
+# that's expected and safe: no partial deploy happens on failure.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  GCP_REGION: us-central1
+  ARTIFACT_REPO: popcorn
+  SERVICE_NAME: popcorn-api
+
+jobs:
+  gate:
+    uses: ./.github/workflows/ci.yml
+
+  migrate:
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run prisma:generate -w server
+
+      - name: Apply pending migrations to production database
+        run: npm run prisma:deploy -w server
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+  deploy-server:
+    needs: migrate
+    runs-on: ubuntu-latest
+    outputs:
+      service_url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        run: |
+          IMAGE="${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          docker build -f server/Dockerfile -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.GCP_REGION }}
+          image: ${{ env.IMAGE }}
+          flags: --allow-unauthenticated
+          env_vars: |
+            NODE_ENV=production
+            CLIENT_ORIGIN=${{ secrets.CLIENT_ORIGIN }}
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+            FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}
+            FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}
+            TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+            TMDB_API_BASE_URL=https://api.themoviedb.org/3
+            TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/
+
+  deploy-client:
+    needs: deploy-server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run build -w shared
+
+      - name: Build client
+        run: npm run build -w client
+        env:
+          VITE_API_BASE_URL: ${{ needs.deploy-server.outputs.service_url }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+          projectId: popcorn-70873
+          channelId: live

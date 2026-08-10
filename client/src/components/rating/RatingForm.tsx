@@ -34,6 +34,7 @@ export function RatingForm({ tmdbId, type, initialRating }: RatingFormProps) {
       <PopcornRating value={score} onChange={setScore} size="lg" showValueLabel />
       <textarea
         placeholder="Add a review (optional)"
+        aria-label="Review (optional)"
         value={review}
         onChange={(e) => setReview(e.target.value)}
         maxLength={2000}

@@ -25,7 +25,11 @@ export function CommentThread({ ratingId }: { ratingId: string }) {
             <span className={styles.author}>{comment.user.displayName}</span>
             <span>{comment.body}</span>
             {currentUser?.id === comment.userId && (
-              <button type="button" onClick={() => deleteComment.mutate(comment.id)}>
+              <button
+                type="button"
+                aria-label={`Delete your comment: "${comment.body}"`}
+                onClick={() => deleteComment.mutate(comment.id)}
+              >
                 Delete
               </button>
             )}

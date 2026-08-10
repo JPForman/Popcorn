@@ -6,7 +6,7 @@ Use clean non-verbose code and reusable components when possible. Use global var
 
 ## Project
 
-Popcorn — a movie/TV rating app. Users rate titles on a 0–6 "popcorn bag" scale in half-bag increments, keep a personal watched timeline, and follow other users for a basic activity feed. All 4 core MVP layers are implemented: auth, TMDB search/detail, ratings CRUD + personal timeline, and the social layer (follow/unfollow, activity feed, comments). Remaining work is polish/deploy (responsive + accessibility passes, Dockerfile, `firebase.json`, GitHub Actions).
+Popcorn — a movie/TV rating app. Users rate titles on a 0–6 "popcorn bag" scale in half-bag increments, keep a personal watched timeline, and follow other users for a basic activity feed. All 5 MVP phases are implemented: auth, TMDB search/detail, ratings CRUD + personal timeline, the social layer (follow/unfollow, activity feed, comments, user discovery), and polish/deploy (accessibility, responsive, Docker, CI/CD). The deploy pipeline exists in the repo but has not yet been exercised against real infrastructure — see "Deploy pipeline" below for what's still required before `git push` to `main` produces a live deploy.
 
 ## Commands
 
@@ -17,7 +17,7 @@ npm run dev          # boots server (tsx watch, :8080) and client (Vite, :5173) 
 npm run build         # builds shared -> server -> client, in that order (order matters: server/client import @popcorn/shared's dist output)
 npm run typecheck     # tsc --noEmit across all three workspaces
 npm run test          # vitest run across all three workspaces
-npm run lint          # eslint across all three workspaces — NOTE: no eslint config exists yet, this will currently fail
+npm run lint          # eslint across all three workspaces, via the single root eslint.config.mjs (flat config)
 ```
 
 Single-workspace equivalents: `npm run <script> --workspace=server` (or `-w client`, `-w shared`).
@@ -37,6 +37,8 @@ A single test file: `npx vitest run path/to/file.test.ts` (from within the relev
 Real secrets live in `server/.env` and `client/.env` (both gitignored, never commit them). `.env.example` at the root documents every variable and where to obtain it; `server/.env.example` just points back to the root file. Required for the server to boot: `DATABASE_URL`/`DIRECT_URL` (Neon), `FIREBASE_PROJECT_ID`/`FIREBASE_CLIENT_EMAIL`/`FIREBASE_PRIVATE_KEY` (Firebase Admin service account), `TMDB_API_KEY` (themoviedb.org). The client needs the matching `VITE_FIREBASE_*` values from the same Firebase project's Web App config, plus `VITE_API_BASE_URL`.
 
 `shared` must be built (`npm run build -w shared`) before `server` or `client` typecheck/build will resolve `@popcorn/shared` — it's consumed via its compiled `dist/` output, not source, since both workspaces import it as a package (`import { ... } from "@popcorn/shared"`), not a relative path.
+
+`server`'s `build` script runs `prisma generate` **before** `tsc` (`"prisma generate && tsc -p tsconfig.json"`) — that order matters and was a real bug once: with it reversed, `tsc` typechecks against the un-generated Prisma client stub (no model types, `Prisma.Decimal` missing, query results typed `any`), and it silently "worked" on this dev machine only because `prisma generate` had already been run manually beforehand at some point, populating `node_modules/@prisma/client` before the misordered script ever ran. A clean environment (a fresh clone, or the Docker build stage) has no such head start and fails immediately — that's exactly how this got caught, via `docker build` on the `server/Dockerfile`, not via local `npm run build`.
 
 ## Architecture
 
@@ -88,12 +90,19 @@ The signature UI piece, reused across the title detail page, `RatingForm`, and `
 - `src/lib/apiClient.ts` — thin fetch wrapper; attaches the current Firebase ID token to every request and throws `ApiError` on non-2xx responses (surfaced through React Query's error channel).
 - `src/lib/queryClient.ts` — shared `QueryClient` instance for React Query, which is the intended pattern for all server-state fetching/mutation going forward (not plain `useEffect`/`useState`).
 - Styling is CSS Modules + Sass (`*.module.scss` per component, global tokens in `src/styles/_variables.scss` / `_mixins.scss`, imported via `@use`). Mobile-first: base styles target the smallest viewport, `respond-up($breakpoint)` mixin layers on `min-width` media queries.
+- `$color-primary` in `_variables.scss` is `#c2410c`, not a brighter orange, specifically because it's used as link/text color throughout (`a { color: $color-primary }` in `global.scss`) — a brighter shade measured under WCAG AA's 4.5:1 contrast threshold against `$color-bg`; this one clears it (~4.8:1). Don't brighten it without rechecking contrast.
+- `global.scss` gives `button`/`input`/`select`/`textarea` a shared base style including `min-height: 44px` (mobile touch target sizing) and a bordered/padded look; small text-styled buttons that intentionally break from this (e.g. the "Comments" toggle on `RatingCard`/`ActivityItem`, the delete button in `CommentThread`) explicitly override `min-height: auto` in their own module — that override is deliberate, not a missed base style.
+- `App.tsx` renders a `.skipLink` (styled in `global.scss`, off-screen until focused) before `Header`, targeting `<main id="main-content">` — standard skip-navigation pattern for keyboard users.
 - `src/components/social/CommentThread.tsx` is only mounted (and only fetches `GET /api/ratings/:ratingId/comments`) when its parent (`RatingCard` or `ActivityItem`) has a local `showComments` toggle switched on — comments aren't fetched for every card on a timeline/feed page load, only on demand.
 
 ### Module system note
 
 `shared` and `server` are ESM (`"type": "module"`) compiled with `NodeNext`/`Bundler` resolution — relative imports between `.ts` files must use explicit `.js` extensions (e.g. `import { env } from "../config/env.js"`), even though the source files are `.ts`. This is required by `NodeNext` module resolution, not a typo.
 
-## Planning context
+### Deploy pipeline
 
-This repo is being built in phases (Foundation → TMDB integration → Rating core → Social layer → Polish/deploy); the first four are done. Polish/deploy is next: mobile-first responsive pass, accessibility pass (axe scan, alt text, landmarks), and the actual deploy pipeline. Deploy target is Firebase Hosting (client) + Cloud Run (server), migrations run via `prisma migrate deploy` in CI, GitHub Actions for CI/CD — none of that pipeline exists yet (no `.github/workflows/`, `Dockerfile`, or `firebase.json` in the repo currently).
+`.github/workflows/ci.yml` (lint/typecheck/test/build, called both directly on PRs and as a reusable `workflow_call` job from `deploy.yml`) and `.github/workflows/deploy.yml` (on push to `main`: gate → `prisma migrate deploy` against production Neon → build+push `server/Dockerfile` to Artifact Registry → `gcloud run deploy` → build the client with the live Cloud Run URL as `VITE_API_BASE_URL` → `firebase deploy --only hosting`) both exist in the repo. **They will fail** until the GitHub repo has all the secrets listed in the comment block at the top of `deploy.yml` (`GCP_PROJECT_ID`, `GCP_SA_KEY`, `DATABASE_URL`, `DIRECT_URL`, `CLIENT_ORIGIN`, the `FIREBASE_*` admin values, `FIREBASE_SERVICE_ACCOUNT` for hosting deploy specifically, `TMDB_API_KEY`, and the `VITE_FIREBASE_*` values) — that's expected and safe, since nothing partially deploys on a failed run. `server/Dockerfile` is a two-stage build (`node:20-alpine` both stages) and has been verified locally: it builds, and a container run from it correctly reads/writes the real Neon DB and calls TMDB (see the build-script-ordering note above for the one real bug this verification caught). `firebase.json`/`.firebaserc` target project `popcorn-70873`. None of this has been exercised against real GCP/Firebase infrastructure yet — Artifact Registry repo creation, the Cloud Run service account, and the GitHub secrets themselves still need to be provisioned before the first real deploy.
+
+### Linting
+
+`eslint.config.mjs` at the repo root is the **only** ESLint config — flat config (ESLint 10), applies to all three workspaces via file-pattern overrides (`server/**/*.ts` + `shared/**/*.ts` get Node globals, `client/**/*.{ts,tsx}` gets browser globals + `eslint-plugin-react-hooks`). Each workspace's `lint` script is just `eslint src`; there's no per-workspace `.eslintrc`.

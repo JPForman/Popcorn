@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useUserSearch } from "../hooks/api/useUserSearch";
 import { UserCard } from "../components/social/UserCard";
+import styles from "./PeoplePage.module.scss";
 
 export function PeoplePage() {
   const [query, setQuery] = useState("");
@@ -13,6 +14,7 @@ export function PeoplePage() {
       <h1>Find people</h1>
       <input
         type="search"
+        className={styles.searchInput}
         placeholder="Search by name…"
         aria-label="Search for users by name"
         value={query}

@@ -1,7 +1,9 @@
 $color-bg: #ffffff;
 $color-text: #1a1a1a;
 $color-border: #e2e2e2;
-$color-primary: #e8590c;
+// #c2410c rather than a brighter orange: ~4.8:1 contrast against $color-bg,
+// meets WCAG AA (4.5:1) for normal text since this is used as link/text color throughout.
+$color-primary: #c2410c;
 $color-muted: #6b6b6b;
 
 $space-xs: 0.25rem;
