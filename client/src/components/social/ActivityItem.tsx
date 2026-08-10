@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import type { TimelineEntry } from "../../hooks/api/useRatings";
-import { PopcornRating } from "./PopcornRating";
-import { CommentThread } from "../social/CommentThread";
-import styles from "./RatingCard.module.scss";
+import type { FeedEntry } from "../../hooks/api/useFeed";
+import { PopcornRating } from "../rating/PopcornRating";
+import { CommentThread } from "./CommentThread";
+import styles from "./ActivityItem.module.scss";
 
-export function RatingCard({ id, title, score, review, createdAt }: TimelineEntry) {
+export function ActivityItem({ id, user, title, score, review, createdAt }: FeedEntry) {
   const [showComments, setShowComments] = useState(false);
   const titleHref = `/title/${title.type}/${title.tmdbId}`;
 
   return (
-    <article className={styles.card}>
+    <article className={styles.item}>
       <Link to={titleHref} className={styles.posterLink}>
         {title.posterUrl ? (
           <img src={title.posterUrl} alt={`${title.name} poster`} className={styles.poster} />
@@ -19,10 +19,10 @@ export function RatingCard({ id, title, score, review, createdAt }: TimelineEntr
         )}
       </Link>
       <div className={styles.body}>
-        <Link to={titleHref} className={styles.name}>
-          {title.name}
-          {title.releaseYear && <span className={styles.year}> ({title.releaseYear})</span>}
-        </Link>
+        <p className={styles.byline}>
+          <Link to={`/u/${user.id}`}>{user.displayName}</Link> rated{" "}
+          <Link to={titleHref}>{title.name}</Link>
+        </p>
         <PopcornRating value={score} readOnly size="sm" showValueLabel />
         {review && <p className={styles.review}>{review}</p>}
         <time className={styles.date} dateTime={createdAt}>

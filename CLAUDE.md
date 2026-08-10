@@ -6,7 +6,7 @@ Use clean non-verbose code and reusable components when possible. Use global var
 
 ## Project
 
-Popcorn — a movie/TV rating app. Users rate titles on a 0–6 "popcorn bag" scale in half-bag increments, keep a personal watched timeline, and follow other users for a basic activity feed. Currently mid-build: auth, TMDB search/detail, and ratings CRUD + personal timeline are implemented. Social features (follow, activity feed, comments) are still a stub page awaiting their backend routes.
+Popcorn — a movie/TV rating app. Users rate titles on a 0–6 "popcorn bag" scale in half-bag increments, keep a personal watched timeline, and follow other users for a basic activity feed. All 4 core MVP layers are implemented: auth, TMDB search/detail, ratings CRUD + personal timeline, and the social layer (follow/unfollow, activity feed, comments). Remaining work is polish/deploy (responsive + accessibility passes, Dockerfile, `firebase.json`, GitHub Actions).
 
 ## Commands
 
@@ -74,14 +74,19 @@ Layering is strict: `routes/` → `controllers/` (thin — parse request, call a
 
 The signature UI piece, reused across the title detail page, `RatingForm`, and `RatingCard` (timeline). Each of the 6 bags is an outline SVG with a clipped, absolutely-positioned filled SVG on top (`width: 50%` or `100%`) — not three separate icon assets. `readOnly` renders `role="img"` with a descriptive `aria-label` and no interaction; the interactive mode is `role="slider"` with `aria-valuemin/max/now/valuetext`, arrow-key ±0.5 stepping (Home/End to bounds), and pointer events (unified mouse+touch) that map the cursor's X position within the 6-bag row to the nearest half-bag — left half of a bag = half-fill, right half = full. jsdom doesn't implement `PointerEvent` (see `client/src/test/setup.ts` for the polyfill), which is required for `PopcornRating.test.tsx`'s pointer-mapping assertions to get real `clientX` values.
 
+### Social layer (`src/services/follow.service.ts`, `feed.service.ts`, `comment.service.ts`)
+
+`followUser`/`unfollowUser` are both idempotent (upsert / `deleteMany` rather than create / delete-by-unique-key) so double-clicking Follow or unfollowing something you don't follow never errors; `followUser` also guards against self-follow (`BadRequestError`, 400). `getPublicUser` (`GET /api/users/:userId`) enriches the base `User` row with `followerCount`/`followingCount` (`follow.service.ts#getFollowCounts`) and, when the caller is authenticated via `optionalAuth`, `viewerIsFollowing` — the client's `ProfilePage` reads this directly rather than making a second request to check follow state. The feed (`GET /api/feed`, `feed.service.ts`) queries `Rating` where `user.followers` (the rater's followers relation) has some row with `followerId` equal to the viewer — i.e. "ratings by people I follow" — cursor-paginated like the timeline, with the rater's `{id, displayName, avatarUrl}` embedded per entry. Comments are scoped two ways: `POST/GET /api/ratings/:ratingId/comments` (nested under `ratings.routes.ts`) for creating/listing on a specific rating, and a flat `DELETE /api/comments/:id` (`comments.routes.ts`) for deletion by id with the same ownership-check pattern as ratings. `toRatingDto` (Decimal→number conversion) is factored into `src/lib/dto.ts` since both `rating.service.ts` and `feed.service.ts` need it.
+
 ### Client structure
 
-- `src/router.tsx` defines the full route tree (`createBrowserRouter`) even though the social pages (`FeedPage`, `ProfilePage`) are currently stubs — this is intentional scaffolding from the MVP plan, not dead code to clean up.
+- `src/router.tsx` defines the full route tree (`createBrowserRouter`).
 - `src/hooks/useAuth.tsx` — `AuthProvider`/`useAuth`, wraps Firebase's `onAuthStateChanged`, exposes `{ firebaseUser, loading }`, and performs the bootstrap-call side effect described above.
 - `src/components/layout/ProtectedRoute.tsx` — redirects to `/login` when `useAuth()` has no user; used as a wrapping route in `router.tsx`, not a per-page guard.
 - `src/lib/apiClient.ts` — thin fetch wrapper; attaches the current Firebase ID token to every request and throws `ApiError` on non-2xx responses (surfaced through React Query's error channel).
 - `src/lib/queryClient.ts` — shared `QueryClient` instance for React Query, which is the intended pattern for all server-state fetching/mutation going forward (not plain `useEffect`/`useState`).
 - Styling is CSS Modules + Sass (`*.module.scss` per component, global tokens in `src/styles/_variables.scss` / `_mixins.scss`, imported via `@use`). Mobile-first: base styles target the smallest viewport, `respond-up($breakpoint)` mixin layers on `min-width` media queries.
+- `src/components/social/CommentThread.tsx` is only mounted (and only fetches `GET /api/ratings/:ratingId/comments`) when its parent (`RatingCard` or `ActivityItem`) has a local `showComments` toggle switched on — comments aren't fetched for every card on a timeline/feed page load, only on demand.
 
 ### Module system note
 
@@ -89,4 +94,4 @@ The signature UI piece, reused across the title detail page, `RatingForm`, and `
 
 ## Planning context
 
-This repo is being built in phases (Foundation → TMDB integration → Rating core → Social layer → Polish/deploy); Foundation, TMDB integration, and Rating core are done. Social layer (follow/unfollow, activity feed, comments) is next — `FeedPage`/`ProfilePage` are stubs and there's no `Comment`/`Follow` service or route yet despite those Prisma models already existing. Deploy target is Firebase Hosting (client) + Cloud Run (server), migrations run via `prisma migrate deploy` in CI, GitHub Actions for CI/CD — none of that pipeline exists yet (no `.github/workflows/`, `Dockerfile`, or `firebase.json` in the repo currently).
+This repo is being built in phases (Foundation → TMDB integration → Rating core → Social layer → Polish/deploy); the first four are done. Polish/deploy is next: mobile-first responsive pass, accessibility pass (axe scan, alt text, landmarks), and the actual deploy pipeline. Deploy target is Firebase Hosting (client) + Cloud Run (server), migrations run via `prisma migrate deploy` in CI, GitHub Actions for CI/CD — none of that pipeline exists yet (no `.github/workflows/`, `Dockerfile`, or `firebase.json` in the repo currently).

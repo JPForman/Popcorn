@@ -1,0 +1,47 @@
+@use "../../styles/variables" as *;
+
+.thread {
+  margin-top: $space-xs;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.comment {
+  display: flex;
+  align-items: baseline;
+  gap: $space-xs;
+  font-size: 0.85rem;
+
+  button {
+    margin-left: auto;
+    color: $color-muted;
+    background: none;
+    border: none;
+    font-size: 0.8rem;
+  }
+}
+
+.author {
+  font-weight: 600;
+}
+
+.form {
+  display: flex;
+  gap: $space-xs;
+  margin-top: $space-xs;
+
+  input {
+    flex: 1;
+    font: inherit;
+    padding: $space-xs;
+    border: 1px solid $color-border;
+    border-radius: $space-xs;
+  }
+}

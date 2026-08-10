@@ -1,8 +1,15 @@
 import { Router } from "express";
-import { createRatingSchema, ratingParamsSchema, updateRatingSchema } from "@popcorn/shared";
-import { requireAuth } from "../middleware/auth.js";
+import {
+  createCommentSchema,
+  createRatingSchema,
+  ratingIdParamsSchema,
+  ratingParamsSchema,
+  updateRatingSchema,
+} from "@popcorn/shared";
+import { requireAuth, optionalAuth } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 import { createRating, patchRating, removeRating } from "../controllers/ratings.controller.js";
+import { listComments, postComment } from "../controllers/comment.controller.js";
 
 export const ratingsRouter = Router();
 
@@ -21,4 +28,19 @@ ratingsRouter.delete(
   requireAuth,
   validate(ratingParamsSchema, "params"),
   removeRating,
+);
+
+ratingsRouter.post(
+  "/:ratingId/comments",
+  requireAuth,
+  validate(ratingIdParamsSchema, "params"),
+  validate(createCommentSchema, "body"),
+  postComment,
+);
+
+ratingsRouter.get(
+  "/:ratingId/comments",
+  optionalAuth,
+  validate(ratingIdParamsSchema, "params"),
+  listComments,
 );

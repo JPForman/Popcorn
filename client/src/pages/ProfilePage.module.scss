@@ -1,0 +1,22 @@
+@use "../styles/variables" as *;
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  align-items: flex-start;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.stats {
+  display: flex;
+  gap: $space-md;
+  color: $color-muted;
+  font-size: 0.9rem;
+}

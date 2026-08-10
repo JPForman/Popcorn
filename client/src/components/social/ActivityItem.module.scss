@@ -1,6 +1,6 @@
 @use "../../styles/variables" as *;
 
-.card {
+.item {
   display: flex;
   gap: $space-md;
   padding: $space-sm 0;
@@ -23,24 +23,16 @@
   gap: $space-xs;
 }
 
-.name {
-  font-weight: 600;
-  color: inherit;
-  text-decoration: none;
+.byline {
+  margin: 0;
 
-  &:hover {
-    text-decoration: underline;
+  a {
+    font-weight: 600;
   }
-}
-
-.year {
-  color: $color-muted;
-  font-weight: 400;
 }
 
 .review {
   margin: 0;
-  color: $color-text;
   font-size: 0.9rem;
 }
 

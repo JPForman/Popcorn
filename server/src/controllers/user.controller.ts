@@ -3,6 +3,7 @@ import type { TimelineQuery } from "@popcorn/shared";
 import { updateProfileSchema } from "@popcorn/shared";
 import { getUserById, updateUser } from "../services/user.service.js";
 import { getUserRatings } from "../services/rating.service.js";
+import { getFollowCounts, isFollowing } from "../services/follow.service.js";
 import { NotFoundError, UnauthorizedError } from "../lib/errors.js";
 
 export async function getMe(req: Request, res: Response) {
@@ -20,7 +21,13 @@ export async function updateMe(req: Request, res: Response) {
 export async function getPublicUser(req: Request, res: Response) {
   const user = await getUserById(req.params.userId);
   if (!user) throw new NotFoundError("User not found");
-  res.json(user);
+
+  const [counts, viewerIsFollowing] = await Promise.all([
+    getFollowCounts(user.id),
+    req.user ? isFollowing(req.user.id, user.id) : Promise.resolve(false),
+  ]);
+
+  res.json({ ...user, ...counts, viewerIsFollowing });
 }
 
 export async function getUserTimeline(req: Request, res: Response) {

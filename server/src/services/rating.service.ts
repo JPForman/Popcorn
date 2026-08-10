@@ -1,12 +1,8 @@
-import type { Prisma } from "@prisma/client";
 import type { CreateRatingInput, TimelineQuery, UpdateRatingInput } from "@popcorn/shared";
 import { prisma } from "../lib/prisma.js";
 import { ForbiddenError, NotFoundError } from "../lib/errors.js";
+import { toRatingDto } from "../lib/dto.js";
 import { getOrFetchTitle } from "./title.service.js";
-
-function toRatingDto<T extends { score: Prisma.Decimal }>(rating: T) {
-  return { ...rating, score: Number(rating.score) };
-}
 
 export async function upsertRating(userId: string, input: CreateRatingInput) {
   const title = await getOrFetchTitle(input.tmdbId, input.type);

@@ -5,6 +5,8 @@ import helmet from "helmet";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { commentsRouter } from "./routes/comments.routes.js";
+import { feedRouter } from "./routes/feed.routes.js";
 import { healthRouter } from "./routes/health.routes.js";
 import { ratingsRouter } from "./routes/ratings.routes.js";
 import { searchRouter } from "./routes/search.routes.js";
@@ -24,6 +26,8 @@ export function createApp() {
   app.use("/api/search", searchRouter);
   app.use("/api/titles", titlesRouter);
   app.use("/api/ratings", ratingsRouter);
+  app.use("/api/comments", commentsRouter);
+  app.use("/api/feed", feedRouter);
 
   app.use(errorHandler);
 
