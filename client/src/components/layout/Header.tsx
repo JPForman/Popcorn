@@ -16,6 +16,7 @@ export function Header() {
           🍿 Popcorn
         </Link>
         <Link to="/search">Search</Link>
+        <Link to="/people">People</Link>
         {firebaseUser ? (
           <>
             {currentUser && <Link to={`/u/${currentUser.id}/timeline`}>My timeline</Link>}

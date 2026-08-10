@@ -1,0 +1,42 @@
+@use "../../styles/variables" as *;
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  padding: $space-sm 0;
+  border-bottom: 1px solid $color-border;
+}
+
+.avatar,
+.avatarPlaceholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: $color-border;
+  flex-shrink: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+  flex: 1;
+}
+
+.name {
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.bio {
+  margin: 0;
+  color: $color-muted;
+  font-size: 0.85rem;
+}

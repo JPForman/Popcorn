@@ -5,6 +5,7 @@ import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
 import { SearchPage } from "./pages/SearchPage";
+import { PeoplePage } from "./pages/PeoplePage";
 import { TitleDetailPage } from "./pages/TitleDetailPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { TimelinePage } from "./pages/TimelinePage";
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignupPage /> },
       { path: "search", element: <SearchPage /> },
+      { path: "people", element: <PeoplePage /> },
       { path: "title/:type/:tmdbId", element: <TitleDetailPage /> },
       { path: "u/:userId", element: <ProfilePage /> },
       { path: "u/:userId/timeline", element: <TimelinePage /> },

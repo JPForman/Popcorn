@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import type { TimelineQuery } from "@popcorn/shared";
+import type { TimelineQuery, UserSearchQuery } from "@popcorn/shared";
 import { updateProfileSchema } from "@popcorn/shared";
-import { getUserById, updateUser } from "../services/user.service.js";
+import { getUserById, searchUsers, updateUser } from "../services/user.service.js";
 import { getUserRatings } from "../services/rating.service.js";
 import { getFollowCounts, isFollowing } from "../services/follow.service.js";
 import { NotFoundError, UnauthorizedError } from "../lib/errors.js";
@@ -16,6 +16,11 @@ export async function updateMe(req: Request, res: Response) {
   const input = updateProfileSchema.parse(req.body);
   const updated = await updateUser(req.user.id, input);
   res.json(updated);
+}
+
+export async function search(req: Request, res: Response) {
+  const { q } = req.query as unknown as UserSearchQuery;
+  res.json(await searchUsers(q, req.user?.id));
 }
 
 export async function getPublicUser(req: Request, res: Response) {
