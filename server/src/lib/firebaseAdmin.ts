@@ -8,7 +8,7 @@ const app =
     credential: cert({
       projectId: env.FIREBASE_PROJECT_ID,
       clientEmail: env.FIREBASE_CLIENT_EMAIL,
-      privateKey: env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      privateKey: Buffer.from(env.FIREBASE_PRIVATE_KEY_BASE64, "base64").toString("utf8"),
     }),
   });
 

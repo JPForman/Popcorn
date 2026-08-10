@@ -12,7 +12,10 @@
 #                               (used for the server's CORS allow-list)
 #   FIREBASE_PROJECT_ID       - Firebase Admin service account project_id (for verifying user ID tokens)
 #   FIREBASE_CLIENT_EMAIL     - Firebase Admin service account client_email
-#   FIREBASE_PRIVATE_KEY      - Firebase Admin service account private_key (with \n escapes, same format as .env)
+#   FIREBASE_PRIVATE_KEY_BASE64 - Firebase Admin service account private_key, base64-encoded (see .env.example
+#                               for the one-liner) -- NOT the raw \n-escaped PEM. A raw multi-line PEM value
+#                               gets mangled when interpolated into the env_vars block below (real newlines
+#                               break its KEY=VALUE-per-line parsing); base64 sidesteps that entirely.
 #   TMDB_API_KEY               - TMDB API key
 #   VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID
 #                               - same values as client/.env's Firebase Web App config
@@ -96,7 +99,7 @@ jobs:
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
             FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}
-            FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}
+            FIREBASE_PRIVATE_KEY_BASE64=${{ secrets.FIREBASE_PRIVATE_KEY_BASE64 }}
             TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
             TMDB_API_BASE_URL=https://api.themoviedb.org/3
             TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/

@@ -8,7 +8,7 @@ const envSchema = z.object({
   CLIENT_ORIGIN: z.string().min(1).default("http://localhost:5173"),
   FIREBASE_PROJECT_ID: z.string().min(1),
   FIREBASE_CLIENT_EMAIL: z.string().min(1),
-  FIREBASE_PRIVATE_KEY: z.string().min(1),
+  FIREBASE_PRIVATE_KEY_BASE64: z.string().min(1),
   TMDB_API_KEY: z.string().min(1),
   TMDB_API_BASE_URL: z.string().default("https://api.themoviedb.org/3"),
   TMDB_IMAGE_BASE_URL: z.string().default("https://image.tmdb.org/t/p/"),
