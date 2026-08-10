@@ -1,0 +1,16 @@
+@use "../styles/variables" as *;
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-md;
+  margin-bottom: $space-md;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: $space-xs;
+    font-size: 0.85rem;
+    color: $color-muted;
+  }
+}

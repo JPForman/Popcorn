@@ -22,6 +22,11 @@ export const updateRatingSchema = z.object({
 });
 export type UpdateRatingInput = z.infer<typeof updateRatingSchema>;
 
+export const ratingParamsSchema = z.object({
+  id: z.string(),
+});
+export type RatingParams = z.infer<typeof ratingParamsSchema>;
+
 export const timelineQuerySchema = z.object({
   type: titleTypeSchema.optional(),
   sort: z.enum(["date", "score"]).default("date"),

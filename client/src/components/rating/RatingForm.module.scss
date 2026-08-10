@@ -1,0 +1,23 @@
+@use "../../styles/variables" as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  padding: $space-md;
+  border: 1px solid $color-border;
+  border-radius: $space-sm;
+
+  textarea {
+    font: inherit;
+    padding: $space-sm;
+    border: 1px solid $color-border;
+    border-radius: $space-xs;
+    resize: vertical;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: $space-sm;
+}

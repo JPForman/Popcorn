@@ -6,7 +6,7 @@ Use clean non-verbose code and reusable components when possible. Use global var
 
 ## Project
 
-Popcorn — a movie/TV rating app. Users rate titles on a 0–6 "popcorn bag" scale in half-bag increments, keep a personal watched timeline, and follow other users for a basic activity feed. Currently mid-build; only the auth/foundation layer (Phase 1 of the MVP plan) is implemented. Search, ratings, timeline, and social features are stubbed client-side pages awaiting their backend routes.
+Popcorn — a movie/TV rating app. Users rate titles on a 0–6 "popcorn bag" scale in half-bag increments, keep a personal watched timeline, and follow other users for a basic activity feed. Currently mid-build: auth, TMDB search/detail, and ratings CRUD + personal timeline are implemented. Social features (follow, activity feed, comments) are still a stub page awaiting their backend routes.
 
 ## Commands
 
@@ -66,9 +66,17 @@ Layering is strict: `routes/` → `controllers/` (thin — parse request, call a
 
 `tmdb.service.ts` is the only module that talks to the TMDB HTTP API directly (search + `/movie|tv/{id}?append_to_response=credits`) and maps TMDB's response shape into this app's DTOs. `title.service.ts` owns the cache-on-read policy: `getOrFetchTitle(tmdbId, type, viewerId?)` upserts the `Title` row (keyed by `[tmdbId, type]`) only when missing or older than `TITLE_STALE_MS` (7 days) — but cast is fetched live from TMDB on *every* call regardless of staleness and is never persisted (deliberately no `Cast`/`Person` table for MVP). The same function also computes `averageScore`/`ratingCount` via `prisma.rating.aggregate` and, when a `viewerId` is passed (from `optionalAuth`), the viewer's own rating — so the title-detail response is a single merged DTO, not something callers assemble themselves. `searchTitles` is a thin passthrough to TMDB search with no DB write — search results are transient/preview, not cached until a title's detail page is actually opened.
 
+### Ratings (`src/services/rating.service.ts`)
+
+`POST /api/ratings` always **upserts** on `[userId, titleId]` rather than erroring on a duplicate — rating a title you've already rated silently updates that existing row (same `id`, new `score`/`review`/`updatedAt`) instead of requiring the client to know whether to POST or PATCH. `PATCH /api/ratings/:id` and `DELETE /api/ratings/:id` exist for direct edits by id and both call `requireOwnedRating` first, throwing `ForbiddenError` if `req.user.id` doesn't match the row's `userId` — the client currently only uses the upsert path (`RatingForm` always POSTs) and reserves PATCH for a future inline-edit-from-timeline flow. The timeline endpoint (`GET /api/users/:userId/ratings`) takes `type`/`sort`/`order`/`cursor`/`limit` per `timelineQuerySchema` and returns cursor-paginated `{ ratings, nextCursor }` with the `Title` relation embedded on each entry.
+
+### `PopcornRating` (`client/src/components/rating/PopcornRating.tsx`)
+
+The signature UI piece, reused across the title detail page, `RatingForm`, and `RatingCard` (timeline). Each of the 6 bags is an outline SVG with a clipped, absolutely-positioned filled SVG on top (`width: 50%` or `100%`) — not three separate icon assets. `readOnly` renders `role="img"` with a descriptive `aria-label` and no interaction; the interactive mode is `role="slider"` with `aria-valuemin/max/now/valuetext`, arrow-key ±0.5 stepping (Home/End to bounds), and pointer events (unified mouse+touch) that map the cursor's X position within the 6-bag row to the nearest half-bag — left half of a bag = half-fill, right half = full. jsdom doesn't implement `PointerEvent` (see `client/src/test/setup.ts` for the polyfill), which is required for `PopcornRating.test.tsx`'s pointer-mapping assertions to get real `clientX` values.
+
 ### Client structure
 
-- `src/router.tsx` defines the full route tree (`createBrowserRouter`) even though most page components are currently stubs — this is intentional scaffolding from the MVP plan, not dead code to clean up.
+- `src/router.tsx` defines the full route tree (`createBrowserRouter`) even though the social pages (`FeedPage`, `ProfilePage`) are currently stubs — this is intentional scaffolding from the MVP plan, not dead code to clean up.
 - `src/hooks/useAuth.tsx` — `AuthProvider`/`useAuth`, wraps Firebase's `onAuthStateChanged`, exposes `{ firebaseUser, loading }`, and performs the bootstrap-call side effect described above.
 - `src/components/layout/ProtectedRoute.tsx` — redirects to `/login` when `useAuth()` has no user; used as a wrapping route in `router.tsx`, not a per-page guard.
 - `src/lib/apiClient.ts` — thin fetch wrapper; attaches the current Firebase ID token to every request and throws `ApiError` on non-2xx responses (surfaced through React Query's error channel).
@@ -81,4 +89,4 @@ Layering is strict: `routes/` → `controllers/` (thin — parse request, call a
 
 ## Planning context
 
-This repo is being built in phases (Foundation → TMDB integration → Rating core → Social layer → Polish/deploy); Foundation and TMDB integration are done. Ratings are still read-only aggregates with no create/edit/delete UI or endpoints yet. Deploy target is Firebase Hosting (client) + Cloud Run (server), migrations run via `prisma migrate deploy` in CI, GitHub Actions for CI/CD — none of that pipeline exists yet (no `.github/workflows/`, `Dockerfile`, or `firebase.json` in the repo currently).
+This repo is being built in phases (Foundation → TMDB integration → Rating core → Social layer → Polish/deploy); Foundation, TMDB integration, and Rating core are done. Social layer (follow/unfollow, activity feed, comments) is next — `FeedPage`/`ProfilePage` are stubs and there's no `Comment`/`Follow` service or route yet despite those Prisma models already existing. Deploy target is Firebase Hosting (client) + Cloud Run (server), migrations run via `prisma migrate deploy` in CI, GitHub Actions for CI/CD — none of that pipeline exists yet (no `.github/workflows/`, `Dockerfile`, or `firebase.json` in the repo currently).

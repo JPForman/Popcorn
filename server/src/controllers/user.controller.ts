@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
+import type { TimelineQuery } from "@popcorn/shared";
 import { updateProfileSchema } from "@popcorn/shared";
 import { getUserById, updateUser } from "../services/user.service.js";
+import { getUserRatings } from "../services/rating.service.js";
 import { NotFoundError, UnauthorizedError } from "../lib/errors.js";
 
 export async function getMe(req: Request, res: Response) {
@@ -19,4 +21,12 @@ export async function getPublicUser(req: Request, res: Response) {
   const user = await getUserById(req.params.userId);
   if (!user) throw new NotFoundError("User not found");
   res.json(user);
+}
+
+export async function getUserTimeline(req: Request, res: Response) {
+  const user = await getUserById(req.params.userId);
+  if (!user) throw new NotFoundError("User not found");
+
+  const timeline = await getUserRatings(user.id, req.query as unknown as TimelineQuery);
+  res.json(timeline);
 }

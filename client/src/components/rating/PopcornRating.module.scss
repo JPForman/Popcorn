@@ -1,0 +1,66 @@
+@use "../../styles/variables" as *;
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.interactive {
+  cursor: pointer;
+  border-radius: $space-xs;
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 3px;
+  }
+}
+
+.bag {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.bagOutline {
+  display: block;
+  fill: none;
+  stroke: $color-border;
+  stroke-width: 1.5;
+}
+
+.bagFillClip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.bagFilled {
+  display: block;
+  fill: $color-primary;
+  stroke: $color-primary;
+  stroke-width: 1.5;
+}
+
+.label {
+  margin-left: $space-xs;
+  color: $color-muted;
+  font-size: 0.85em;
+}
+
+.sm .bag svg {
+  width: 16px;
+  height: 16px;
+}
+
+.md .bag svg {
+  width: 24px;
+  height: 24px;
+}
+
+.lg .bag svg {
+  width: 32px;
+  height: 32px;
+}

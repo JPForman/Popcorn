@@ -6,6 +6,7 @@ import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { healthRouter } from "./routes/health.routes.js";
+import { ratingsRouter } from "./routes/ratings.routes.js";
 import { searchRouter } from "./routes/search.routes.js";
 import { titlesRouter } from "./routes/titles.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
@@ -22,6 +23,7 @@ export function createApp() {
   app.use("/api/users", usersRouter);
   app.use("/api/search", searchRouter);
   app.use("/api/titles", titlesRouter);
+  app.use("/api/ratings", ratingsRouter);
 
   app.use(errorHandler);
 

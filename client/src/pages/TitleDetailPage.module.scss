@@ -26,6 +26,24 @@
   font-weight: 400;
 }
 
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  flex: 1;
+}
+
+.ratingSummary {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+}
+
+.ratingCount {
+  color: $color-muted;
+  font-size: 0.9rem;
+}
+
 .cast {
   list-style: none;
   padding: 0;
