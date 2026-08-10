@@ -18,6 +18,12 @@ jobs:
 
       - run: npm ci
 
+      # server and client import @popcorn/shared as a package, resolved via its compiled
+      # dist/ output (not source) -- without this, typecheck/test/build fail with "Cannot
+      # find module '@popcorn/shared'".
+      - name: Build shared package
+        run: npm run build -w shared
+
       # Server code imports the generated Prisma client's model types; without this,
       # typecheck/build fail even though no database connection is needed to generate it.
       - name: Generate Prisma Client
