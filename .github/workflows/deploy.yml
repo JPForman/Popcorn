@@ -2,18 +2,17 @@
 #
 # Required GitHub repo secrets (Settings -> Secrets and variables -> Actions):
 #   GCP_PROJECT_ID          - GCP project id backing the Firebase project (Firebase projects ARE GCP projects)
-#   GCP_SA_KEY               - JSON key for a GCP service account with Artifact Registry Writer + Cloud Run Admin
-#                               + Service Account User roles
+#   GCP_SA_KEY               - JSON key for the `popcorn-deployer` service account (roles: Artifact Registry
+#                               Writer, Cloud Run Admin, Service Account User, Firebase Hosting Admin) --
+#                               used for both the Cloud Run deploy and the Firebase Hosting deploy below
 #   DATABASE_URL              - production Neon pooled connection string (used by `prisma migrate deploy`
 #                               and injected into the running Cloud Run service)
 #   DIRECT_URL                - production Neon direct/unpooled connection string (migrations only)
 #   CLIENT_ORIGIN             - deployed Firebase Hosting origin, e.g. https://popcorn-70873.web.app
 #                               (used for the server's CORS allow-list)
-#   FIREBASE_PROJECT_ID       - Firebase Admin service account project_id
+#   FIREBASE_PROJECT_ID       - Firebase Admin service account project_id (for verifying user ID tokens)
 #   FIREBASE_CLIENT_EMAIL     - Firebase Admin service account client_email
 #   FIREBASE_PRIVATE_KEY      - Firebase Admin service account private_key (with \n escapes, same format as .env)
-#   FIREBASE_SERVICE_ACCOUNT  - a *separate* Firebase service account JSON (Firebase Hosting Admin role) used
-#                               only to authenticate `firebase deploy`, not the running server
 #   TMDB_API_KEY               - TMDB API key
 #   VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID
 #                               - same values as client/.env's Firebase Web App config
@@ -128,6 +127,6 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+          firebaseServiceAccount: "${{ secrets.GCP_SA_KEY }}"
           projectId: popcorn-70873
           channelId: live
