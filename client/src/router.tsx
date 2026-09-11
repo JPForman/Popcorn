@@ -1,7 +1,6 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { App } from "./App";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
-import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
 import { SearchPage } from "./pages/SearchPage";
@@ -22,7 +21,7 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
-          { index: true, element: <HomePage /> },
+          { index: true, element: <Navigate to="/search" replace /> },
           { path: "search", element: <SearchPage /> },
           { path: "people", element: <PeoplePage /> },
           { path: "title/:type/:tmdbId", element: <TitleDetailPage /> },
