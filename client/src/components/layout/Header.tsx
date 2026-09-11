@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { firebaseAuth } from "../../lib/firebase";
 import { useAuth } from "../../hooks/useAuth";
@@ -8,6 +8,12 @@ import styles from "./Header.module.scss";
 export function Header() {
   const { firebaseUser } = useAuth();
   const { data: currentUser } = useCurrentUser();
+  const navigate = useNavigate();
+
+  async function handleLogOut() {
+    await signOut(firebaseAuth);
+    navigate("/login");
+  }
 
   return (
     <header className={styles.header}>
@@ -21,7 +27,7 @@ export function Header() {
           <>
             {currentUser && <Link to={`/u/${currentUser.id}/timeline`}>My timeline</Link>}
             <Link to="/feed">Feed</Link>
-            <button type="button" onClick={() => signOut(firebaseAuth)}>
+            <button type="button" onClick={handleLogOut}>
               Log out
             </button>
           </>
