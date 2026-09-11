@@ -6,19 +6,60 @@
 
 body {
   margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
+  font-family: $font-body;
   color: $color-text;
   background: $color-bg;
+  // Needed for .fullBleed's 100vw trick below, which would otherwise introduce
+  // horizontal scroll equal to the scrollbar's own width.
+  overflow-x: hidden;
 }
 
 main {
   max-width: 720px;
   margin: 0 auto;
   padding: $space-md;
+}
+
+// Lets a section (e.g. the auth screen) bleed edge-to-edge past main's max-width,
+// regardless of main's own padding.
+.fullBleed {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+h1,
+h2 {
+  font-family: $font-display;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: $color-maroon;
+}
+
+h1 {
+  font-size: $font-size-h1;
+}
+
+h2 {
+  font-size: $font-size-h2;
+
+  &::before {
+    content: "";
+    display: block;
+    width: 48px;
+    height: 4px;
+    margin-bottom: $space-xs;
+    background-image: repeating-linear-gradient(
+      90deg,
+      $color-maroon 0,
+      $color-maroon 5px,
+      $color-gold 5px,
+      $color-gold 10px
+    );
+  }
 }
 
 a {
@@ -31,7 +72,7 @@ button {
   min-height: 44px;
   padding: $space-xs $space-md;
   border: 1px solid $color-border;
-  border-radius: $space-xs;
+  border-radius: $radius-sm;
   background: $color-bg;
   color: $color-text;
 
@@ -48,13 +89,17 @@ textarea {
   min-height: 44px;
   padding: $space-xs $space-sm;
   border: 1px solid $color-border;
-  border-radius: $space-xs;
+  border-radius: $radius-sm;
   color: $color-text;
-  background: $color-bg;
+  background: $color-surface;
 }
 
 textarea {
   min-height: auto;
+}
+
+.formError {
+  color: $color-danger;
 }
 
 .skipLink {

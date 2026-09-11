@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { firebaseAuth } from "../lib/firebase";
 import { useAuth } from "../hooks/useAuth";
+import { AuthLayout } from "../components/layout/AuthLayout";
+import { AuthField } from "../components/forms/AuthField";
+import { AuthSubmitButton } from "../components/forms/AuthSubmitButton";
+import formStyles from "../components/forms/AuthField.module.scss";
 
 interface SignupFormValues {
   displayName: string;
@@ -39,40 +43,27 @@ export function SignupPage() {
   };
 
   return (
-    <div>
-      <h1>Sign up</h1>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div>
-          <label htmlFor="displayName">Display name</label>
-          <input id="displayName" type="text" required {...register("displayName")} />
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" autoComplete="email" required {...register("email")} />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            minLength={6}
-            required
-            {...register("password")}
-          />
-        </div>
+    <AuthLayout>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className={formStyles.form}>
+        <AuthField id="displayName" label="Display name" registration={register("displayName")} />
+        <AuthField id="email" label="Email" type="email" autoComplete="email" registration={register("email")} />
+        <AuthField
+          id="password"
+          label="Password"
+          type="password"
+          autoComplete="new-password"
+          minLength={6}
+          registration={register("password")}
+        />
         {error && (
-          <p role="alert" style={{ color: "crimson" }}>
+          <p role="alert" className="formError">
             {error}
           </p>
         )}
-        <button type="submit" disabled={isSubmitting}>
+        <AuthSubmitButton disabled={isSubmitting}>
           {isSubmitting ? "Creating account…" : "Sign up"}
-        </button>
+        </AuthSubmitButton>
       </form>
-      <p>
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
-    </div>
+    </AuthLayout>
   );
 }

@@ -15,3 +15,12 @@
     }
   }
 }
+
+// Boxed "ticket-stub" card face — used by RatingCard, ActivityItem, TitleCard,
+// UserCard, and RatingForm.
+@mixin ticket-card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-ticket;
+}

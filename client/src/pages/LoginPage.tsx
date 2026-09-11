@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { firebaseAuth } from "../lib/firebase";
 import { useAuth } from "../hooks/useAuth";
+import { AuthLayout } from "../components/layout/AuthLayout";
+import { AuthField } from "../components/forms/AuthField";
+import { AuthSubmitButton } from "../components/forms/AuthSubmitButton";
+import formStyles from "../components/forms/AuthField.module.scss";
 
 interface LoginFormValues {
   email: string;
@@ -33,35 +37,23 @@ export function LoginPage() {
   };
 
   return (
-    <div>
-      <h1>Log in</h1>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" autoComplete="email" required {...register("email")} />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            {...register("password")}
-          />
-        </div>
+    <AuthLayout>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className={formStyles.form}>
+        <AuthField id="email" label="Email" type="email" autoComplete="email" registration={register("email")} />
+        <AuthField
+          id="password"
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          registration={register("password")}
+        />
         {error && (
-          <p role="alert" style={{ color: "crimson" }}>
+          <p role="alert" className="formError">
             {error}
           </p>
         )}
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Logging in…" : "Log in"}
-        </button>
+        <AuthSubmitButton disabled={isSubmitting}>{isSubmitting ? "Logging in…" : "Log in"}</AuthSubmitButton>
       </form>
-      <p>
-        No account? <Link to="/signup">Sign up</Link>
-      </p>
-    </div>
+    </AuthLayout>
   );
 }

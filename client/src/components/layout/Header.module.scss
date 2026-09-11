@@ -1,8 +1,22 @@
 @use "../../styles/variables" as *;
 
 .header {
-  border-bottom: 1px solid $color-border;
-  padding: $space-sm $space-md;
+  padding: $space-sm $space-md 0;
+  background: $color-surface;
+
+  &::after {
+    content: "";
+    display: block;
+    margin: $space-sm (-$space-md) 0;
+    height: 5px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      $color-maroon 0,
+      $color-maroon 6px,
+      $color-gold 6px,
+      $color-gold 12px
+    );
+  }
 }
 
 .nav {
@@ -18,7 +32,11 @@
 }
 
 .brand {
-  font-weight: 700;
+  font-family: $font-display;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 1.5rem;
+  color: $color-maroon;
   margin-right: auto;
   text-decoration: none;
 }

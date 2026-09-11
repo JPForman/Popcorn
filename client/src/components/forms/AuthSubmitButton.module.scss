@@ -1,0 +1,19 @@
+@use "../../styles/variables" as *;
+
+.button {
+  width: 100%;
+  background: $color-primary;
+  border-color: $color-primary;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: $shadow-ticket-sm;
+
+  &:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+
+  &:disabled {
+    box-shadow: none;
+  }
+}

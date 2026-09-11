@@ -1,18 +1,18 @@
 @use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
 
 .form {
+  @include ticket-card;
   display: flex;
   flex-direction: column;
   gap: $space-sm;
   padding: $space-md;
-  border: 1px solid $color-border;
-  border-radius: $space-sm;
 
   textarea {
     font: inherit;
     padding: $space-sm;
     border: 1px solid $color-border;
-    border-radius: $space-xs;
+    border-radius: $radius-sm;
     resize: vertical;
   }
 }

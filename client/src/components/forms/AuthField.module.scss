@@ -1,0 +1,56 @@
+@use "../../styles/variables" as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+
+  label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $color-muted;
+  }
+}
+
+.inputWrap {
+  position: relative;
+
+  input {
+    width: 100%;
+    padding-right: $space-xl;
+  }
+}
+
+.checkIcon,
+.xIcon {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: $space-sm;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+}
+
+.checkIcon {
+  stroke: $color-success;
+}
+
+.xIcon {
+  stroke: $color-danger;
+}
+
+.inputWrap input:not(:placeholder-shown):valid ~ .checkIcon {
+  display: block;
+}
+
+.inputWrap input:not(:placeholder-shown):invalid ~ .xIcon {
+  display: block;
+}

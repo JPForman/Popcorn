@@ -1,16 +1,52 @@
-$color-bg: #ffffff;
-$color-text: #1a1a1a;
-$color-border: #e2e2e2;
-// #c2410c rather than a brighter orange: ~4.8:1 contrast against $color-bg,
-// meets WCAG AA (4.5:1) for normal text since this is used as link/text color throughout.
+// Backgrounds
+$color-bg: #fdf6e3; // warm parchment/ticket-paper cream
+$color-surface: #fffaf0; // slightly lighter "old lace" for ticket-stub card faces
+
+// Text
+$color-text: #2b1810; // deep espresso-brown
+$color-muted: #6b5842; // warm muted brown-gray
+
+// Borders — structural/decorative only, never used as a text color
+$color-border: #d8c3a0; // warm tan
+
+// Brand + accents
+// #c2410c rather than a brighter orange: re-verified at ~4.80:1 contrast against the
+// current $color-bg (#fdf6e3), meets WCAG AA (4.5:1) for normal text since this is
+// used as link/text color throughout.
 $color-primary: #c2410c;
-$color-muted: #6b6b6b;
+// Decorative only (film-strip motif, badges/fills with dark text on top, borders, hover
+// glows) — fails 4.5:1 as small text on $color-bg (2.20:1), so never use as a text color.
+$color-gold: #d4a017;
+// Passes AA as text-on-cream (9.5:1) and as a dark surface with cream text on it.
+$color-maroon: #7a1f1f;
+// Form/validation state colors — both re-verified at >=4.5:1 against $color-bg and
+// $color-surface (6.82:1 / 5.55:1 on bg respectively), safe as text or icon color.
+$color-danger: #a3261e;
+$color-success: #2f6f4f;
 
 $space-xs: 0.25rem;
 $space-sm: 0.5rem;
 $space-md: 1rem;
 $space-lg: 1.5rem;
 $space-xl: 2.5rem;
+
+$radius-sm: 4px;
+$radius-md: 8px;
+
+// Hard offset "printed ticket" shadows — no blur, solid offset.
+$shadow-ticket: 4px 4px 0 $color-maroon;
+$shadow-ticket-sm: 2px 2px 0 $color-text;
+
+// Condensed marquee-letter display face for site chrome (headings, brand) only —
+// never for card titles (movie names, usernames), which stay on $font-body.
+$font-display: "Bebas Neue", "Arial Narrow", sans-serif;
+$font-body:
+  system-ui,
+  -apple-system,
+  "Segoe UI",
+  sans-serif;
+$font-size-h1: 2.5rem;
+$font-size-h2: 1.75rem;
 
 $breakpoint-sm: 480px;
 $breakpoint-md: 768px;

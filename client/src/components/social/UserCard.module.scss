@@ -1,11 +1,13 @@
 @use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
 
 .card {
+  @include ticket-card;
   display: flex;
   align-items: center;
   gap: $space-md;
-  padding: $space-sm 0;
-  border-bottom: 1px solid $color-border;
+  padding: $space-md;
+  margin-bottom: $space-md;
 }
 
 .avatar,

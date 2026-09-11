@@ -1,17 +1,19 @@
 @use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
 
 .item {
+  @include ticket-card;
   display: flex;
   gap: $space-md;
-  padding: $space-sm 0;
-  border-bottom: 1px solid $color-border;
+  padding: $space-md;
+  margin-bottom: $space-md;
 }
 
 .poster,
 .posterPlaceholder {
   width: 60px;
   height: 90px;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   object-fit: cover;
   background: $color-border;
   flex-shrink: 0;
