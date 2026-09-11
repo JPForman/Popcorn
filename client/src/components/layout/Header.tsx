@@ -21,10 +21,10 @@ export function Header() {
         <Link to="/" className={styles.brand}>
           🍿 Popcorn
         </Link>
-        <Link to="/search">Search</Link>
-        <Link to="/people">People</Link>
         {firebaseUser ? (
           <>
+            <Link to="/search">Search</Link>
+            <Link to="/people">People</Link>
             {currentUser && <Link to={`/u/${currentUser.id}/timeline`}>My timeline</Link>}
             <Link to="/feed">Feed</Link>
             <button type="button" onClick={handleLogOut}>
