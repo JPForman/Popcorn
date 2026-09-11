@@ -1,4 +1,10 @@
+@use "../styles/variables" as *;
+
 .searchInput {
   width: 100%;
   max-width: 480px;
+}
+
+.results {
+  margin-top: $space-md;
 }

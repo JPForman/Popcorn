@@ -17,6 +17,6 @@ export const updateProfileSchema = z.object({
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
 export const userSearchQuerySchema = z.object({
-  q: z.string().trim().min(1).max(100),
+  q: z.string().trim().max(100).default(""),
 });
 export type UserSearchQuery = z.infer<typeof userSearchQuerySchema>;

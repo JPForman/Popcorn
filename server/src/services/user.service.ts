@@ -24,12 +24,12 @@ export function updateUser(id: string, input: UpdateProfileInput) {
 export async function searchUsers(query: string, viewerId?: string) {
   const users = await prisma.user.findMany({
     where: {
-      displayName: { contains: query, mode: "insensitive" },
+      ...(query ? { displayName: { contains: query, mode: "insensitive" } } : {}),
       ...(viewerId ? { id: { not: viewerId } } : {}),
     },
     select: { id: true, displayName: true, avatarUrl: true, bio: true },
     orderBy: { displayName: "asc" },
-    take: 20,
+    take: query ? 20 : 25,
   });
 
   if (!viewerId || users.length === 0) {

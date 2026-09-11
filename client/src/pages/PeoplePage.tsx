@@ -20,10 +20,10 @@ export function PeoplePage() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      {isLoading && <p>Searching…</p>}
-      {isError && <p role="alert">Something went wrong searching. Try again.</p>}
+      {debouncedQuery && isLoading && <p>Searching…</p>}
+      {debouncedQuery && isError && <p role="alert">Something went wrong searching. Try again.</p>}
       {data && data.length === 0 && debouncedQuery && <p>No users found for "{debouncedQuery}".</p>}
-      <div>
+      <div className={styles.results}>
         {data?.map((user) => (
           <UserCard key={user.id} {...user} />
         ))}
