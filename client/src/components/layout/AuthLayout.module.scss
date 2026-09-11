@@ -82,6 +82,16 @@
   align-self: center;
 }
 
+// Crops PopcornRating's real 6-bag scale down to 5 for this joke card, without
+// changing the shared component (5 bags * 16px sm size + 4 gaps * 2px, per
+// PopcornRating.module.scss's .sm/.rating rules).
+.ratingClip {
+  display: inline-block;
+  width: 88px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
 .floatingCard {
   @include ticket-card;
   align-self: flex-end;

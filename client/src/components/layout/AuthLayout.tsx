@@ -24,7 +24,9 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         <p className={styles.tagline}>Rate movies and TV shows, 0 to 5 bags</p>
         <div className={styles.floatingCard}>
           <strong>The Batman</strong>
-          <PopcornRating value={5} readOnly size="sm" />
+          <span className={styles.ratingClip}>
+            <PopcornRating value={4} readOnly size="sm" />
+          </span>
         </div>
       </div>
       <div className={styles.formPanel}>
