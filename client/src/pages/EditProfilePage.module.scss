@@ -1,0 +1,22 @@
+@use "../styles/variables" as *;
+@use "../styles/mixins" as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
+  max-width: 480px;
+}
+
+.card {
+  @include ticket-card;
+  padding: $space-md;
+}
+
+.reauth {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  padding-top: $space-sm;
+  border-top: 1px solid $color-border;
+}

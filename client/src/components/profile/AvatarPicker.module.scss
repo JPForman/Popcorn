@@ -1,0 +1,28 @@
+@use "../../styles/variables" as *;
+
+.group {
+  display: flex;
+  gap: $space-md;
+}
+
+.option {
+  padding: 0;
+  min-height: auto;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+
+  img {
+    display: block;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+.selected {
+  box-shadow: 0 0 0 3px $color-surface, 0 0 0 5px $color-primary;
+}

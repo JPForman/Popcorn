@@ -4,7 +4,9 @@ import type { UpdateProfileInput } from "@popcorn/shared";
 export async function bootstrapUser(firebaseUid: string, email: string, displayName: string) {
   return prisma.user.upsert({
     where: { firebaseUid },
-    update: {},
+    // displayName is deliberately not resynced here: it's user-editable via updateUser,
+    // while Firebase's name claim is set once at signup and would otherwise clobber edits.
+    update: { email },
     create: {
       firebaseUid,
       email,

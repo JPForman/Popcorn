@@ -5,6 +5,7 @@ import { useAuth } from "../useAuth";
 interface CurrentUser {
   id: string;
   displayName: string;
+  email: string;
   avatarUrl: string | null;
   bio: string | null;
 }
