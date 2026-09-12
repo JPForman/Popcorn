@@ -1,8 +1,10 @@
 @use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
 
 .header {
   padding: $space-sm $space-md 0;
   background: $color-surface;
+  position: relative;
 
   &::after {
     content: "";
@@ -17,18 +19,20 @@
       $color-gold 12px
     );
   }
+
+  @include respond-up(lg) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-md;
+  }
 }
 
-.nav {
+.bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: $space-md;
-  flex-wrap: wrap;
-
-  a,
-  button {
-    color: inherit;
-  }
 }
 
 .brand {
@@ -37,6 +41,64 @@
   letter-spacing: 0.04em;
   font-size: 1.5rem;
   color: $color-maroon;
-  margin-right: auto;
   text-decoration: none;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  @include respond-up(lg) {
+    display: none;
+  }
+}
+
+.icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+.hidden {
+  display: none;
+}
+
+.nav {
+  display: none;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $space-sm;
+  position: absolute;
+  top: 100%;
+  left: $space-md;
+  right: $space-md;
+  margin-top: $space-sm;
+  padding: $space-md;
+  z-index: 10;
+  @include ticket-card;
+
+  &.navOpen {
+    display: flex;
+  }
+
+  a,
+  button {
+    color: inherit;
+  }
+
+  @include respond-up(lg) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: static;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    z-index: auto;
+    gap: $space-md;
+  }
 }
